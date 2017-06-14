@@ -117,9 +117,9 @@ var observe = {
     const native = new Native();
     native.post({
       permissions: ['child_process'],
-      script: `
+      script: String.raw`
         const {exec} = require('child_process');
-        let command = 'start "" ${filename}';
+        let command = 'start "" ${filename.replace(/\\/g, '\\\\')}';
         if (${navigator.platform.startsWith('Mac')}) {
           command = 'open ${filename}';
         }
