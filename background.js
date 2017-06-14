@@ -76,7 +76,20 @@ function open ({onCreated, onChanged, onError}) {
 }
 
 open({
-  onCreated: filename => console.log('temporary file is created', filename),
+  onCreated: (filename) => {
+    // open the created tmp file in Sublime Text for Mac OS
+    const native = new Native();
+    native.post({
+      permissions: ['child_process'],
+      script: `
+        const {exec} = require('child_process');
+        exec('open -a "Sublime Text" ${filename}', (error, stdout, stderr) => {
+          push({error, stdout, stderr});
+          close();
+        });
+      `
+    });
+  },
   onChanged: resp => console.log('file changed', resp),
   onError: e => console.error(e)
 });
