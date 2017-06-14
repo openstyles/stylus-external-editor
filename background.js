@@ -2,12 +2,15 @@
 'use strict';
 
 function openTmpFile ({onCreated, onChanged, onError}) {
-  function external (tmpdir) {
+  function external () {
     /* globals push, close */
-    var crypto = require('crypto');
-    var fs = require('fs');
+    const crypto = require('crypto');
+    const fs = require('fs');
 
-    var filename = require('path').join(tmpdir, 'stylus-' + crypto.randomBytes(4).readUInt32LE(0) + '.css');
+    const filename = require('path').join(
+      require('os').tmpdir(),
+      'stylus-' + crypto.randomBytes(4).readUInt32LE(0) + '.css'
+    );
     fs.writeFile(filename, '/* this is a temporary style file */', e => {
       if (e) {
         push({
@@ -59,20 +62,10 @@ function openTmpFile ({onCreated, onChanged, onError}) {
       throw Error('unsupported response');
     }
   });
-  native.post({
-    method: 'spec'
-  }).then(resp => {
-    const tmpdir = resp.tmpdir;
-    if (tmpdir) {
-      native.send({
-        permissions: ['crypto', 'fs', 'path'],
-        script: `(${external.toString()})('${tmpdir}')`
-      });
-    }
-    else {
-      throw Error('cannot find system\'s temporary directory');
-    }
-  }).catch(onError);
+  native.send({
+    permissions: ['crypto', 'fs', 'path', 'os'],
+    script: String.raw`(${external.toString()})()`
+  });
 }
 
 function observeFile(filename, {onChanged, onError}) {
@@ -142,7 +135,7 @@ var observe = {
 };
 
 /* open a temp file and observe */
-//openTmpFile(observe);
+openTmpFile(observe);
 
 /* only observe file changes */
-observeFile('/Users/jeremy/Desktop/test.css', observe);
+//observeFile('/Users/jeremy/Desktop/test.css', observe);
