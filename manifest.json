@@ -1,0 +1,17 @@
+{
+  "name": "Stylus External Editor",
+  "version": "0.1.0",
+  "manifest_version": 2,
+  "permissions": [
+    "nativeMessaging",
+    "downloads",
+    "https://api.github.com/repos/stylus/native-client/releases/latest"
+  ],
+  "background": {
+    "persistent": false,
+    "scripts": [
+      "native.js",
+      "background.js"
+    ]
+  }
+}
