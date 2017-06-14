@@ -1,7 +1,7 @@
 /* globals Native */
 'use strict';
 
-function open ({onCreated, onChanged, onError}) {
+function openTmpFile ({onCreated, onChanged, onError}) {
   function external (tmpdir) {
     /* globals push, close */
     var crypto = require('crypto');
@@ -42,7 +42,7 @@ function open ({onCreated, onChanged, onError}) {
     });
   }
 
-  var native = new Native();
+  const native = new Native();
   native.on('error', onError);
   native.on('response', resp => {
     if (resp.method === 'file-created') {
@@ -75,7 +75,50 @@ function open ({onCreated, onChanged, onError}) {
   }).catch(onError);
 }
 
-open({
+function observeFile(filename, {onChanged, onError}) {
+  function external (filename) {
+    /* globals push, close */
+    var fs = require('fs');
+
+    fs.watchFile(filename, event => {
+      fs.readFile(filename, 'utf8', (e, data) => {
+        if (e) {
+          push({
+            type: 'file-read',
+            error: e.message
+          });
+        }
+        else {
+          push({
+            method: 'file-changed',
+            data,
+            event
+          });
+        }
+      });
+    });
+  }
+  const native = new Native();
+  native.on('error', onError);
+  native.on('response', resp => {
+    if (resp.method === 'file-changed') {
+      onChanged(resp);
+    }
+    else if (resp.error) {
+      onError(resp.error);
+    }
+    else {
+      console.error(resp);
+      throw Error('unsupported response');
+    }
+  });
+  native.send({
+    permissions: ['fs'],
+    script: `(${external.toString()})('${filename}')`
+  });
+}
+
+var observe = {
   onCreated: (filename) => {
     // open the created tmp file in Sublime Text for Mac OS
     const native = new Native();
@@ -83,7 +126,11 @@ open({
       permissions: ['child_process'],
       script: `
         const {exec} = require('child_process');
-        exec('open -a "Sublime Text" ${filename}', (error, stdout, stderr) => {
+        let command = 'start "" ${filename}';
+        if (${navigator.platform.startsWith('Mac')}) {
+          command = 'open ${filename}';
+        }
+        exec(command, (error, stdout, stderr) => {
           push({error, stdout, stderr});
           close();
         });
@@ -92,4 +139,10 @@ open({
   },
   onChanged: resp => console.log('file changed', resp),
   onError: e => console.error(e)
-});
+};
+
+/* open a temp file and observe */
+//openTmpFile(observe);
+
+/* only observe file changes */
+observeFile('/Users/jeremy/Desktop/test.css', observe);

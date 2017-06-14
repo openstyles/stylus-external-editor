@@ -7,7 +7,7 @@ var Native = function () {
   this.reject = null;
 
   this.channel.onDisconnect.addListener(() => {
-    const error = new Error('Unexpended exit of the native client');
+    const error = new Error('Unexpended exit of the native client. Either native client is not integrated or the running application is crashed.');
     if (this.reject) {
       this.reject(error);
     }
