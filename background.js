@@ -1,4 +1,4 @@
-/* globals Native */
+/* globals Native, commands */
 'use strict';
 
 function openTmpFile ({onCreated, onChanged, onError}) {
@@ -68,7 +68,7 @@ function openTmpFile ({onCreated, onChanged, onError}) {
   });
 }
 
-function observeFile(filename, {onChanged, onError}) {
+function observeFile (filename, {onChanged, onError}) {
   function external (filename) {
     /* globals push, close */
     var fs = require('fs');
@@ -114,24 +114,28 @@ function observeFile(filename, {onChanged, onError}) {
 var observe = {
   onCreated: (filename) => {
     // open the created tmp file in Sublime Text for Mac OS
-    const native = new Native();
-    native.post({
-      permissions: ['child_process'],
-      script: String.raw`
-        const {exec} = require('child_process');
-        let command = 'start "" ${filename.replace(/\\/g, '\\\\')}';
-        if (${navigator.platform.startsWith('Mac')}) {
-          command = 'open ${filename}';
-        }
-        exec(command, (error, stdout, stderr) => {
-          push({error, stdout, stderr});
-          close();
-        });
-      `
+    chrome.storage.local.get({
+      command: commands.guess()
+    }, prefs => {
+      const command = prefs.command.replace('[filename]', filename.replace(/\\/g, '\\\\'));
+      let native = new Native();
+      native.post({
+        permissions: ['child_process'],
+        script: String.raw`
+          const {exec} = require('child_process');
+          exec('${command}', (error, stdout, stderr) => {
+            push({error, stdout, stderr});
+            close();
+          });
+        `
+      }).then(
+        r => console.log(r),
+        observe.onError
+      );
     });
   },
   onChanged: resp => console.log('file changed', resp),
-  onError: e => console.error(e)
+  onError: e => console.error('Error occurred', e)
 };
 
 /* open a temp file and observe */

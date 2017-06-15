@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "manifest_version": 2,
   "permissions": [
+    "storage",
     "nativeMessaging",
     "downloads",
     "https://api.github.com/repos/stylus/native-client/releases/latest"
@@ -11,7 +12,12 @@
     "persistent": false,
     "scripts": [
       "native.js",
+      "command.js",
       "background.js"
     ]
+  },
+  "options_ui": {
+    "page": "data/options/index.html",
+    "chrome_style": true
   }
 }

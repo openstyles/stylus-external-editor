@@ -17,11 +17,14 @@ var Native = function () {
     this.resolve = this.reject = this.channel = null;
   });
   this.channel.onMessage.addListener(response => {
-    if (this.resolve) {
+    if ((!response || (response && response.error)) && this.reject) {
+      this.reject(response);
+    }
+    else if (response && this.resolve) {
       this.resolve(response);
     }
     else {
-      this.emit('response', response);
+      this.emit(response && !response.error ? 'response' : 'error', response);
     }
     this.resolve = this.reject = null;
   });
