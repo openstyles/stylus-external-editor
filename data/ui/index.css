@@ -1,0 +1,62 @@
+html {
+  height: 100%;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  margin: 5px;
+  height: calc(100% - 10px);
+  background-color: #f4f3f3;
+  font-family: "Helvetica Neue",Helvetica,sans-serif;
+  font-size: 13px;
+}
+
+#content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border: solid 1px #d1d1d1;
+  background-color: #fff;
+}
+
+.entry {
+  position: relative;
+}
+.entry table {
+  border: solid 1px #d1d1d1;
+  margin: 5px 5px 0 5px;
+  width: calc(100% - 10px);
+}
+.entry td:first-child {
+  width: 10px;
+  padding-right: 10px;
+}
+
+.entry div {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: url('close.svg') center center no-repeat;
+  background-size: 13px;
+  width: 16px;
+  height: 16px;
+  opacity: 0.4;
+  cursor: pointer;
+}
+.entry div:hover {
+  opacity: 0.8;
+}
+.entry div:active {
+  opacity: 1;
+}
+
+#status {
+  display: flex;
+  padding-top: 5px;
+}
+#status span {
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 2px;
+  height: 16px;
+}
